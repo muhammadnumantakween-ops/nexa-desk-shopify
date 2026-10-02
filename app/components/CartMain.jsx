@@ -101,19 +101,111 @@ export function CartMain({layout, cart: originalCart}) {
  *   layout?: CartMainProps['layout'];
  * }}
  */
-function CartEmpty({hidden = false}) {
+function CartEmpty({hidden = false, layout}) {
   const {close} = useAside();
   return (
-    <div hidden={hidden}>
-      <br />
-      <p>
-        Looks like you haven&rsquo;t added anything yet, let&rsquo;s get you
-        started!
-      </p>
-      <br />
-      <Link to="/collections" onClick={close} prefetch="viewport">
-        Continue shopping →
-      </Link>
+    <div hidden={hidden} className="cart-empty-luxury">
+      <div className="cart-empty-visual">
+        <div className="cart-empty-icon-wrap">
+          <svg
+            className="cart-empty-svg"
+            width="48"
+            height="48"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="1.5"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          >
+            <path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z" />
+            <line x1="3" y1="6" x2="21" y2="6" />
+            <path d="M16 10a4 4 0 0 1-8 0" />
+          </svg>
+          <span className="cart-empty-pulse-dot" />
+        </div>
+      </div>
+
+      <div className="cart-empty-text">
+        <h3 className="cart-empty-heading">Your Cart is Empty</h3>
+        <p className="cart-empty-desc">
+          Ready to engineer your clean, clutter-free workspace? Find the exact
+          docking station and cable architecture tailored for your laptop.
+        </p>
+      </div>
+
+      <div className="cart-empty-actions">
+        <Link
+          to="/find-my-setup"
+          onClick={close}
+          prefetch="viewport"
+          className="cart-empty-btn-primary"
+        >
+          <span>Find My Desk Setup (2-Min Quiz)</span>
+          <span className="cta-arrow">→</span>
+        </Link>
+        <Link
+          to="/collections/all"
+          onClick={close}
+          prefetch="viewport"
+          className="cart-empty-btn-secondary"
+        >
+          <span>Browse All Workstation Gear</span>
+        </Link>
+      </div>
+
+      <div className="cart-empty-suggestions">
+        <div className="cart-empty-suggestions-title">
+          <span>POPULAR ARCHITECTURES</span>
+        </div>
+        <div className="cart-empty-quick-pills">
+          <Link
+            to="/products/nexa-dual-display-dock"
+            onClick={close}
+            prefetch="viewport"
+            className="cart-empty-quick-item"
+          >
+            <div className="quick-item-badge">4K 60Hz Dual</div>
+            <div className="quick-item-name">D2 Link 100 Dual Dock</div>
+            <div className="quick-item-price">£179.00</div>
+          </Link>
+          <Link
+            to="/products/nexa-quad-display-dock"
+            onClick={close}
+            prefetch="viewport"
+            className="cart-empty-quick-item"
+          >
+            <div className="quick-item-badge">Flagship 4x Display</div>
+            <div className="quick-item-name">D4 Max Enterprise Dock</div>
+            <div className="quick-item-price">£279.00</div>
+          </Link>
+          <Link
+            to="/compare"
+            onClick={close}
+            prefetch="viewport"
+            className="cart-empty-quick-item compare-quick-pill"
+          >
+            <div className="quick-item-badge">Interactive Matrix</div>
+            <div className="quick-item-name">Compare All 5 Nexa Docks</div>
+            <div className="quick-item-arrow">View Specs →</div>
+          </Link>
+        </div>
+      </div>
+
+      <div className="cart-empty-perks">
+        <div className="cart-perk-item">
+          <span className="perk-icon">🇬🇧</span>
+          <span className="perk-text">Free UK Delivery over £300</span>
+        </div>
+        <div className="cart-perk-item">
+          <span className="perk-icon">⚡</span>
+          <span className="perk-text">30-Day Desk Guarantee</span>
+        </div>
+        <div className="cart-perk-item">
+          <span className="perk-icon">🛡️</span>
+          <span className="perk-text">2-Year British Hardware Warranty</span>
+        </div>
+      </div>
     </div>
   );
 }
