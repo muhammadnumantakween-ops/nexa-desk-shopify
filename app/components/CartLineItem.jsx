@@ -61,6 +61,17 @@ export function CartLineItem({layout, line, childrenMap}) {
               </li>
             ))}
           </ul>
+          {line?.attributes && line.attributes.length > 0 && (
+            <div style={{marginTop: '0.4rem', fontSize: '0.75rem', color: '#4b5563'}}>
+              {line.attributes
+                .filter((attr) => attr.value)
+                .map((attr) => (
+                  <div key={attr.key} style={{display: 'inline-block', marginRight: '0.5rem', background: '#f3f4f6', padding: '0.1rem 0.4rem', borderRadius: '3px'}}>
+                    <span style={{fontWeight: '600'}}>{attr.key.replace(/^_/, '')}:</span> {attr.value}
+                  </div>
+                ))}
+            </div>
+          )}
           <CartLineQuantity line={line} />
         </div>
       </div>

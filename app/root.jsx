@@ -1,4 +1,5 @@
-import {Analytics, getShopAnalytics, useNonce} from '@shopify/hydrogen';
+import {useEffect} from 'react';
+import {Analytics, useAnalytics, getShopAnalytics, useNonce} from '@shopify/hydrogen';
 import {
   Outlet,
   useRouteError,
@@ -13,8 +14,10 @@ import favicon from '~/assets/favicon.svg';
 import {FOOTER_QUERY, HEADER_QUERY} from '~/lib/fragments';
 import resetStyles from '~/styles/reset.css?url';
 import appStyles from '~/styles/app.css?url';
+import wizardStyles from '~/styles/wizard.css?url';
 import tailwindCss from './styles/tailwind.css?url';
 import {PageLayout} from './components/PageLayout';
+import {ErrorDisplay} from './components/ErrorDisplay';
 
 /**
  * This is important to avoid re-fetching root queries on sub-navigations
@@ -75,6 +78,7 @@ export async function loader(args) {
     ...deferredData,
     ...criticalData,
     publicStoreDomain: env.PUBLIC_STORE_DOMAIN,
+    publicGtmId: env.PUBLIC_GTM_ID || 'GTM-NEXADESK',
     shop: getShopAnalytics({
       storefront,
       publicStorefrontId: env.PUBLIC_STOREFRONT_ID,
@@ -145,25 +149,100 @@ function loadDeferredData({context}) {
  */
 export function Layout({children}) {
   const nonce = useNonce();
+  /** @type {RootLoader} */
+  const data = useRouteLoaderData('root');
+  const gtmId = data?.publicGtmId || 'GTM-NEXADESK';
 
   return (
     <html lang="en">
       <head>
         <meta charSet="utf-8" />
         <meta name="viewport" content="width=device-width,initial-scale=1" />
+        {/* Google Tag Manager Container Script with Hydrogen Nonce */}
+        <script
+          nonce={nonce}
+          dangerouslySetInnerHTML={{
+            __html: `(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
+new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
+j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
+'https://www.googletagmanager.com/gtm.js?id='+i+dl;var n=d.querySelector('[nonce]');
+n&&j.setAttribute('nonce',n.nonce||n.getAttribute('nonce'));f.parentNode.insertBefore(j,f);
+})(window,document,'script','dataLayer','${gtmId}');`,
+          }}
+        />
         <link rel="stylesheet" href={tailwindCss}></link>
         <link rel="stylesheet" href={resetStyles}></link>
         <link rel="stylesheet" href={appStyles}></link>
+        <link rel="stylesheet" href={wizardStyles}></link>
         <Meta />
         <Links />
       </head>
       <body>
+        {/* Google Tag Manager (noscript) */}
+        <noscript>
+          <iframe
+            src={`https://www.googletagmanager.com/ns.html?id=${gtmId}`}
+            height="0"
+            width="0"
+            style={{display: 'none', visibility: 'hidden'}}
+          />
+        </noscript>
         {children}
         <ScrollRestoration nonce={nonce} />
         <Scripts nonce={nonce} />
       </body>
     </html>
   );
+}
+
+/**
+ * Listens to Hydrogen Analytics events and forwards them to window.dataLayer for GTM / GA4 / Meta
+ */
+function AnalyticsSubscriber() {
+  const {subscribe} = useAnalytics();
+
+  useEffect(() => {
+    // 1. Page / Product view event
+    subscribe('page_viewed', (payload) => {
+      if (typeof window !== 'undefined') {
+        window.dataLayer = window.dataLayer || [];
+        window.dataLayer.push({
+          event: 'page_view',
+          page_url: window.location.href,
+          page_path: window.location.pathname,
+          ...payload,
+        });
+      }
+    });
+
+    // 2. View item event
+    subscribe('product_viewed', (payload) => {
+      if (typeof window !== 'undefined') {
+        window.dataLayer = window.dataLayer || [];
+        window.dataLayer.push({
+          event: 'view_item',
+          ecommerce: {
+            items: payload?.products || [],
+          },
+        });
+      }
+    });
+
+    // 3. Add to cart event
+    subscribe('product_added_to_cart', (payload) => {
+      if (typeof window !== 'undefined') {
+        window.dataLayer = window.dataLayer || [];
+        window.dataLayer.push({
+          event: 'add_to_cart',
+          ecommerce: {
+            items: payload?.prevCart?.lines || payload?.cart?.lines || [],
+          },
+        });
+      }
+    });
+  }, [subscribe]);
+
+  return null;
 }
 
 export default function App() {
@@ -180,6 +259,7 @@ export default function App() {
       shop={data.shop}
       consent={data.consent}
     >
+      <AnalyticsSubscriber />
       <PageLayout {...data}>
         <Outlet />
       </PageLayout>
@@ -189,26 +269,25 @@ export default function App() {
 
 export function ErrorBoundary() {
   const error = useRouteError();
-  let errorMessage = 'Unknown error';
+  let errorMessage = 'An unexpected error occurred.';
   let errorStatus = 500;
+  let technicalDetails = null;
 
   if (isRouteErrorResponse(error)) {
-    errorMessage = error?.data?.message ?? error.data;
+    errorMessage = error?.data?.message ?? (typeof error.data === 'string' ? error.data : null);
     errorStatus = error.status;
+    technicalDetails = error.data;
   } else if (error instanceof Error) {
     errorMessage = error.message;
+    technicalDetails = error.stack;
   }
 
   return (
-    <div className="route-error">
-      <h1>Oops</h1>
-      <h2>{errorStatus}</h2>
-      {errorMessage && (
-        <fieldset>
-          <pre>{errorMessage}</pre>
-        </fieldset>
-      )}
-    </div>
+    <ErrorDisplay
+      status={errorStatus}
+      message={errorMessage}
+      technicalDetails={technicalDetails}
+    />
   );
 }
 

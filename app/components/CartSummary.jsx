@@ -43,14 +43,55 @@ export function CartSummary({cart, layout}) {
 }
 
 /**
+ * Helper to extract specific cookie by name
+ * @param {string} name
+ */
+function getCookie(name) {
+  if (typeof document === 'undefined') return null;
+  const match = document.cookie.match(new RegExp(`(?:^|; )${name}=([^;]*)`));
+  return match ? decodeURIComponent(match[1]) : null;
+}
+
+/**
  * @param {{checkoutUrl?: string}}
  */
 function CartCheckoutActions({checkoutUrl}) {
   if (!checkoutUrl) return null;
 
+  const handleCheckoutClick = (e) => {
+    e.preventDefault();
+
+    try {
+      const url = new URL(checkoutUrl);
+
+      // 1. Read Google Analytics Client ID (_ga)
+      const gaCookie = getCookie('_ga');
+      if (gaCookie) {
+        url.searchParams.set('_ga', gaCookie);
+      }
+
+      // 2. Read Meta Pixel Identifiers (_fbp, _fbc)
+      const fbpCookie = getCookie('_fbp');
+      if (fbpCookie) {
+        url.searchParams.set('_fbp', fbpCookie);
+      }
+
+      const fbcCookie = getCookie('_fbc');
+      if (fbcCookie) {
+        url.searchParams.set('_fbc', fbcCookie);
+      }
+
+      // Redirect with decorated tracking parameters
+      window.location.href = url.toString();
+    } catch (err) {
+      // Fallback to original checkout URL on parse error
+      window.location.href = checkoutUrl;
+    }
+  };
+
   return (
     <div>
-      <a href={checkoutUrl} target="_self">
+      <a href={checkoutUrl} onClick={handleCheckoutClick} target="_self">
         <p>Continue to Checkout &rarr;</p>
       </a>
       <br />

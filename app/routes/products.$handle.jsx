@@ -9,19 +9,58 @@ import {
 } from '@shopify/hydrogen';
 import {ProductPrice} from '~/components/ProductPrice';
 import {ProductImage} from '~/components/ProductImage';
+import {ProductGallery} from '~/components/ProductGallery';
 import {ProductForm} from '~/components/ProductForm';
+import {WhatsInTheBoxSection} from '~/components/WhatsInTheBoxSection';
+import {SimpleBenefitsSection} from '~/components/SimpleBenefitsSection';
+import {CompatibilityWidget} from '~/components/CompatibilityWidget';
+import {PortDiagram} from '~/components/PortDiagram';
+import {SimpleFAQSection} from '~/components/SimpleFAQSection';
+import {StickyProductBar} from '~/components/StickyProductBar';
+import {RecommendedProductsSection} from '~/components/RecommendedProductsSection';
 import {redirectIfHandleIsLocalized} from '~/lib/redirect';
 
 /**
  * @type {Route.MetaFunction}
  */
 export const meta = ({data}) => {
+  const product = data?.product;
+  const variant = product?.selectedOrFirstAvailableVariant;
+
+  const productSchema = product
+    ? {
+        '@context': 'https://schema.org',
+        '@type': 'Product',
+        name: product.title,
+        description: product.descriptionHtml
+          ? product.descriptionHtml.replace(/<[^>]*>/g, '').slice(0, 300)
+          : product.title,
+        image: variant?.image?.url ? [variant.image.url] : undefined,
+        offers: {
+          '@type': 'Offer',
+          price: variant?.price?.amount || '0.00',
+          priceCurrency: variant?.price?.currencyCode || 'GBP',
+          availability: variant?.availableForSale
+            ? 'https://schema.org/InStock'
+            : 'https://schema.org/OutOfStock',
+          url: `/products/${product.handle}`,
+        },
+      }
+    : null;
+
   return [
-    {title: `Hydrogen | ${data?.product.title ?? ''}`},
+    {title: `Nexa Desk | ${product?.title ?? 'Product'}`},
     {
       rel: 'canonical',
-      href: `/products/${data?.product.handle}`,
+      href: `/products/${product?.handle}`,
     },
+    ...(productSchema
+      ? [
+          {
+            'script:ld+json': productSchema,
+          },
+        ]
+      : []),
   ];
 };
 
@@ -51,11 +90,16 @@ async function loadCriticalData({context, params, request}) {
     throw new Error('Expected product handle to be defined');
   }
 
-  const [{product}] = await Promise.all([
+  const [{product}, relatedProductsData] = await Promise.all([
     storefront.query(PRODUCT_QUERY, {
       variables: {handle, selectedOptions: getSelectedProductOptions(request)},
     }),
-    // Add other queries here, so that they are loaded in parallel
+    storefront
+      .query(RELATED_PRODUCTS_QUERY)
+      .catch((err) => {
+        console.error('Failed to load related products:', err);
+        return {products: {nodes: []}};
+      }),
   ]);
 
   if (!product?.id) {
@@ -67,6 +111,7 @@ async function loadCriticalData({context, params, request}) {
 
   return {
     product,
+    allProducts: relatedProductsData?.products?.nodes || [],
   };
 }
 
@@ -85,7 +130,7 @@ function loadDeferredData({context, params}) {
 
 export default function Product() {
   /** @type {LoaderReturnData} */
-  const {product} = useLoaderData();
+  const {product, allProducts = []} = useLoaderData();
 
   // Optimistically selects a variant with given available variant information
   const selectedVariant = useOptimisticVariant(
@@ -105,28 +150,62 @@ export default function Product() {
 
   const {title, descriptionHtml} = product;
 
+  // Metadata parsing for Spec-Sync Callouts
+  const parseList = (raw) => {
+    if (!raw) return [];
+    try {
+      const parsed = JSON.parse(raw);
+      return Array.isArray(parsed) ? parsed : [raw];
+    } catch {
+      return raw.split(',').map((s) => s.trim());
+    }
+  };
+
+  const wattage = Number(product.dockChargingOutput?.value || 0);
+  const videoOutputs = parseList(product.dockVideoOutputs?.value);
+  const videoInputs = parseList(product.monitorVideoInputs?.value);
+  const hostConnector = product.hostConnector?.value || '';
+
+  const specPills = [];
+  if (wattage > 0) {
+    specPills.push(`⚡ ${wattage}W Fast Charge`);
+  }
+  if (videoOutputs.length > 0) {
+    if (videoOutputs.length >= 2 || title.toLowerCase().includes('dual')) {
+      specPills.push('🖥️ 2 Screens at Once');
+    } else {
+      specPills.push(`🖥️ ${videoOutputs[0]} Plug`);
+    }
+  } else if (videoInputs.length > 0) {
+    specPills.push(`🖥️ ${videoInputs.join(' & ')} Ready`);
+  } else if (hostConnector) {
+    specPills.push(`🔌 ${hostConnector} Cable`);
+  }
+
   return (
-    <div className="product">
-      <ProductImage image={selectedVariant?.image} />
-      <div className="product-main">
-        <h1>{title}</h1>
-        <ProductPrice
-          price={selectedVariant?.price}
-          compareAtPrice={selectedVariant?.compareAtPrice}
-        />
-        <br />
+    <div className="pdp-root-wrapper">
+      <div className="product pdp-page-layout">
+        {/* UI-PDP-01: Sticky Spec-Sync Product Gallery */}
+      <ProductGallery
+        images={product.images?.nodes || []}
+        selectedVariantImage={selectedVariant?.image}
+        productTitle={title}
+        specPills={specPills}
+      />
+      <div className="product-main pdp-details-sidebar">
+        <h1 className="pdp-product-title">{title}</h1>
+        <div className="pdp-price-rating-row">
+          <ProductPrice
+            price={selectedVariant?.price}
+            compareAtPrice={selectedVariant?.compareAtPrice}
+          />
+          <span className="pdp-dispatch-tag">In Stock • Free Next-Day UK Delivery</span>
+        </div>
         <ProductForm
           productOptions={productOptions}
           selectedVariant={selectedVariant}
+          product={product}
         />
-        <br />
-        <br />
-        <p>
-          <strong>Description</strong>
-        </p>
-        <br />
-        <div dangerouslySetInnerHTML={{__html: descriptionHtml}} />
-        <br />
       </div>
       <Analytics.ProductView
         data={{
@@ -143,8 +222,63 @@ export default function Product() {
           ],
         }}
       />
+      {/* Explicit JSON-LD Structured Data for Search Engine Crawlers */}
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify({
+            '@context': 'https://schema.org',
+            '@type': 'Product',
+            name: product.title,
+            offers: {
+              '@type': 'Offer',
+              price: selectedVariant?.price?.amount || '0.00',
+              priceCurrency: selectedVariant?.price?.currencyCode || 'GBP',
+              availability: selectedVariant?.availableForSale
+                ? 'https://schema.org/InStock'
+                : 'https://schema.org/OutOfStock',
+            },
+          }),
+        }}
+      />
     </div>
-  );
+
+    {/* Below-the-fold extended sections */}
+    <div className="pdp-extended-wrapper">
+      <div className="pdp-extended-container">
+        {/* Benefits Section */}
+        <SimpleBenefitsSection product={product} />
+
+        {/* UI-PDP-02: Interactive 'Will It Fit My Device?' Checkbox & Specs */}
+        <CompatibilityWidget product={product} />
+
+        {/* UI-PDP-03: Interactive Front & Rear Port Explorer */}
+        <PortDiagram product={product} />
+
+        {/* What's Included */}
+        <WhatsInTheBoxSection
+          productTitle={product.title}
+          isDock={!product.productRole?.value?.includes('monitor')}
+        />
+
+        {/* FAQ Section */}
+        <SimpleFAQSection product={product} />
+
+        {/* Recommended Products */}
+        <RecommendedProductsSection
+          currentProduct={product}
+          allProducts={allProducts}
+        />
+      </div>
+    </div>
+
+    {/* UI-PDP-04: Sticky Bottom Bar with Selected Variant Price, Builder CTA & Add to Cart */}
+    <StickyProductBar
+      product={product}
+      selectedVariant={selectedVariant}
+    />
+  </div>
+);
 }
 
 const PRODUCT_VARIANT_FRAGMENT = `#graphql
@@ -211,6 +345,33 @@ const PRODUCT_FRAGMENT = `#graphql
         }
       }
     }
+    images(first: 10) {
+      nodes {
+        id
+        url
+        altText
+        width
+        height
+      }
+    }
+    productRole: metafield(namespace: "custom", key: "product_role") {
+      value
+    }
+    supportedOS: metafield(namespace: "custom", key: "supported_operating_systems") {
+      value
+    }
+    hostConnector: metafield(namespace: "custom", key: "host_connector") {
+      value
+    }
+    dockChargingOutput: metafield(namespace: "custom", key: "dock_charging_output") {
+      value
+    }
+    dockVideoOutputs: metafield(namespace: "custom", key: "dock_video_outputs") {
+      value
+    }
+    monitorVideoInputs: metafield(namespace: "custom", key: "monitor_video_inputs") {
+      value
+    }
     selectedOrFirstAvailableVariant(selectedOptions: $selectedOptions, ignoreUnknownOptions: true, caseInsensitiveMatch: true) {
       ...ProductVariant
     }
@@ -237,6 +398,59 @@ const PRODUCT_QUERY = `#graphql
     }
   }
   ${PRODUCT_FRAGMENT}
+`;
+
+const RELATED_PRODUCTS_QUERY = `#graphql
+  query RelatedProducts {
+    products(first: 24) {
+      nodes {
+        id
+        title
+        handle
+        availableForSale
+        priceRange {
+          minVariantPrice {
+            amount
+            currencyCode
+          }
+        }
+        images(first: 1) {
+          nodes {
+            id
+            url
+            altText
+          }
+        }
+        variants(first: 1) {
+          nodes {
+            id
+            title
+            availableForSale
+            price {
+              amount
+              currencyCode
+            }
+            image {
+              url
+              altText
+            }
+          }
+        }
+        productRole: metafield(namespace: "custom", key: "product_role") {
+          value
+        }
+        dockChargingOutput: metafield(namespace: "custom", key: "dock_charging_output") {
+          value
+        }
+        dockVideoOutputs: metafield(namespace: "custom", key: "dock_video_outputs") {
+          value
+        }
+        monitorVideoInputs: metafield(namespace: "custom", key: "monitor_video_inputs") {
+          value
+        }
+      }
+    }
+  }
 `;
 
 /** @typedef {import('./+types/products.$handle').Route} Route */

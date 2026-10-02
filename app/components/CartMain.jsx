@@ -50,6 +50,16 @@ export function CartMain({layout, cart: originalCart}) {
       aria-label={layout === 'page' ? 'Cart page' : 'Cart drawer'}
     >
       <CartEmpty hidden={linesCount} layout={layout} />
+      {cart?.warnings && cart.warnings.length > 0 && (
+        <div style={{background: '#fffbeb', border: '1px solid #fcd34d', color: '#92400e', padding: '1rem', borderRadius: '6px', margin: '1rem 0'}}>
+          <h4 style={{margin: '0 0 0.5rem 0', fontWeight: '700'}}>⚠️ Stock Availability Notice:</h4>
+          <ul style={{margin: 0, paddingLeft: '1.25rem', fontSize: '0.9rem'}}>
+            {cart.warnings.map((w, idx) => (
+              <li key={idx}>{w.message || 'One of the items in your bundle experienced a stock change.'}</li>
+            ))}
+          </ul>
+        </div>
+      )}
       <div className="cart-details">
         <p id="cart-lines" className="sr-only">
           Line items

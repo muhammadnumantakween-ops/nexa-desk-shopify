@@ -64,26 +64,49 @@ function CartAside({cart}) {
 function SearchAside() {
   const queriesDatalistId = useId();
   return (
-    <Aside type="search" heading="SEARCH">
-      <div className="predictive-search">
-        <br />
+    <Aside type="search" heading="SEARCH WORKSPACE STORE">
+      <div className="predictive-search-drawer">
         <SearchFormPredictive>
           {({fetchResults, goToSearch, inputRef}) => (
-            <>
-              <input
-                name="q"
-                onChange={fetchResults}
-                onFocus={fetchResults}
-                placeholder="Search"
-                ref={inputRef}
-                type="search"
-                list={queriesDatalistId}
-              />
-              &nbsp;
-              <button onClick={goToSearch}>Search</button>
-            </>
+            <div className="search-input-wrapper">
+              <div className="search-field-pill">
+                <svg className="search-field-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <circle cx="11" cy="11" r="8"></circle>
+                  <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                </svg>
+                <input
+                  name="q"
+                  onChange={fetchResults}
+                  onFocus={fetchResults}
+                  placeholder="Search docks, monitors, cables, stands..."
+                  ref={inputRef}
+                  type="search"
+                  list={queriesDatalistId}
+                  className="search-field-input"
+                  autoComplete="off"
+                />
+              </div>
+              <button className="search-submit-btn" onClick={goToSearch}>
+                Find
+              </button>
+            </div>
           )}
         </SearchFormPredictive>
+
+        <div className="search-quick-tags">
+          <span className="quick-tags-label">Popular Searches:</span>
+          <div className="quick-tags-list">
+            {['100W Dock', 'DisplayPort', 'HDMI Monitor', 'Studio 65', 'Laptop Stand'].map((tag) => (
+              <Link
+                key={tag}
+                to={`${SEARCH_ENDPOINT}?q=${encodeURIComponent(tag)}`}
+                className="search-tag-chip"
+              >
+                {tag}
+              </Link>
+            ))}
+          </div>
+        </div>
 
         <SearchResultsPredictive>
           {({items, total, term, state, closeSearch}) => {
@@ -151,17 +174,14 @@ function SearchAside() {
  */
 function MobileMenuAside({header, publicStoreDomain}) {
   return (
-    header.menu &&
-    header.shop.primaryDomain?.url && (
-      <Aside type="mobile" heading="MENU">
-        <HeaderMenu
-          menu={header.menu}
-          viewport="mobile"
-          primaryDomainUrl={header.shop.primaryDomain.url}
-          publicStoreDomain={publicStoreDomain}
-        />
-      </Aside>
-    )
+    <Aside type="mobile" heading="MENU">
+      <HeaderMenu
+        menu={header?.menu}
+        viewport="mobile"
+        primaryDomainUrl={header?.shop?.primaryDomain?.url}
+        publicStoreDomain={publicStoreDomain}
+      />
+    </Aside>
   );
 }
 
