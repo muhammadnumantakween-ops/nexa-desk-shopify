@@ -1,4 +1,5 @@
-import {useLoaderData, data, useLocation} from 'react-router';
+import {useLoaderData, data, useLocation, Await} from 'react-router';
+import {Suspense} from 'react';
 import {CartForm} from '@shopify/hydrogen';
 import {CartMain} from '~/components/CartMain';
 import {Header, HeaderMenu} from '~/components/Header';
@@ -103,6 +104,26 @@ export async function loader({context}) {
   return await cart.get();
 }
 
+function CartLoadingSkeleton() {
+  return (
+    <div className="cart-loading-skeleton">
+      <div className="skeleton-header" />
+      <div className="skeleton-content">
+        <div className="skeleton-left">
+          <div className="skeleton-item" />
+          <div className="skeleton-item" />
+          <div className="skeleton-item" />
+        </div>
+        <div className="skeleton-right">
+          <div className="skeleton-box" />
+          <div className="skeleton-box" />
+        </div>
+      </div>
+      <div className="skeleton-footer" />
+    </div>
+  );
+}
+
 export default function CartPage() {
   /** @type {LoaderReturnData} */
   const cart = useLoaderData();
@@ -118,7 +139,9 @@ export default function CartPage() {
           publicStoreDomain={rootData.publicStoreDomain}
         />
       )}
-      <CartMain layout="page" cart={cart} />
+      <Suspense fallback={<CartLoadingSkeleton />}>
+        <CartMain layout="page" cart={cart} />
+      </Suspense>
       {rootData?.footer && (
         <Footer
           footer={rootData.footer}

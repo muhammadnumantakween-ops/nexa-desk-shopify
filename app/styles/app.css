@@ -1665,6 +1665,124 @@ button.reset:hover:not(:has(> *)) {
   flex-shrink: 0;
 }
 
+/* Cart Loading Skeleton */
+@keyframes skeleton-pulse {
+  0% {
+    background-color: rgba(255, 255, 255, 0.1);
+  }
+  50% {
+    background-color: rgba(255, 255, 255, 0.15);
+  }
+  100% {
+    background-color: rgba(255, 255, 255, 0.1);
+  }
+}
+
+.cart-loading-skeleton {
+  width: 100%;
+  min-height: 100vh;
+  background: linear-gradient(135deg, #030712 0%, #0f172a 100%);
+  display: flex;
+  flex-direction: column;
+  padding: 2rem;
+}
+
+.skeleton-header {
+  height: 80px;
+  background-color: rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  margin-bottom: 2rem;
+  animation: skeleton-pulse 1.5s ease-in-out infinite;
+}
+
+.skeleton-content {
+  display: grid;
+  grid-template-columns: 1fr 400px;
+  gap: 2.5rem;
+  flex: 1;
+  margin-bottom: 2rem;
+}
+
+.skeleton-left {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.skeleton-item {
+  height: 150px;
+  background-color: rgba(255, 255, 255, 0.1);
+  border-radius: 14px;
+  animation: skeleton-pulse 1.5s ease-in-out infinite;
+}
+
+.skeleton-item:nth-child(1) {
+  animation-delay: 0s;
+}
+
+.skeleton-item:nth-child(2) {
+  animation-delay: 0.2s;
+}
+
+.skeleton-item:nth-child(3) {
+  animation-delay: 0.4s;
+}
+
+.skeleton-right {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.skeleton-box {
+  height: 200px;
+  background-color: rgba(255, 255, 255, 0.1);
+  border-radius: 14px;
+  animation: skeleton-pulse 1.5s ease-in-out infinite;
+}
+
+.skeleton-box:nth-child(1) {
+  animation-delay: 0.1s;
+}
+
+.skeleton-box:nth-child(2) {
+  animation-delay: 0.3s;
+}
+
+.skeleton-footer {
+  height: 60px;
+  background-color: rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  animation: skeleton-pulse 1.5s ease-in-out infinite 0.5s;
+}
+
+/* Responsive */
+@media (max-width: 1024px) {
+  .skeleton-content {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 768px) {
+  .cart-loading-skeleton {
+    padding: 1rem;
+  }
+
+  .skeleton-header {
+    height: 60px;
+    margin-bottom: 1.5rem;
+  }
+
+  .skeleton-content {
+    gap: 1.5rem;
+    margin-bottom: 1.5rem;
+  }
+
+  .skeleton-item {
+    height: 120px;
+  }
+}
+
 .cart > h1 {
   color: white;
   font-size: 2rem;
