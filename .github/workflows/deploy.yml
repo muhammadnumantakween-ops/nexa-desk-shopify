@@ -1,0 +1,70 @@
+name: Deploy NexaDesk Cart to Oxygen
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+concurrency:
+  group: deployment-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    name: Build & Deploy to Production
+    runs-on: ubuntu-latest
+    environment: production
+
+    permissions:
+      contents: read
+      deployments: write
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Lint code
+        run: npm run lint --if-present
+        continue-on-error: true
+
+      - name: Build Hydrogen storefront
+        run: npm run build
+
+      - name: Deploy to Oxygen
+        run: npx shopify hydrogen deploy --env production --metadata-description "Auto-deploy: NexaDesk Cart (${{ github.sha }})"
+        env:
+          SHOPIFY_HYDROGEN_DEPLOYMENT_TOKEN: ${{ secrets.SHOPIFY_HYDROGEN_DEPLOYMENT_TOKEN }}
+
+      - name: Create deployment
+        uses: actions/github-script@v7
+        if: success()
+        with:
+          script: |
+            github.rest.repos.createDeployment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              ref: context.ref,
+              environment: 'production',
+              auto_merge: false,
+              production_environment: true,
+              description: 'NexaDesk Cart - Auto-deployed via GitHub Actions'
+            })
+
+      - name: Notify on success
+        if: success()
+        run: echo "✅ NexaDesk Cart deployed successfully to Production!"
+
+      - name: Notify on failure
+        if: failure()
+        run: echo "❌ Deployment failed. Check logs for details."

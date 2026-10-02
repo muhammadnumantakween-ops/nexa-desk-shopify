@@ -45,7 +45,7 @@ export function Aside({children, heading, type}) {
       aria-labelledby={id}
     >
       <button className="close-outside" onClick={close} />
-      <aside>
+      <div>
         <header>
           <h3 id={id}>{heading}</h3>
           <button className="close reset" onClick={close} aria-label="Close">
@@ -53,7 +53,7 @@ export function Aside({children, heading, type}) {
           </button>
         </header>
         <main>{children}</main>
-      </aside>
+      </div>
     </div>
   );
 }

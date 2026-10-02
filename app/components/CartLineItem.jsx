@@ -37,56 +37,63 @@ export function CartLineItem({layout, line, childrenMap}) {
           />
         )}
 
-        <div>
-          <Link
-            prefetch="intent"
-            to={lineItemUrl}
-            onClick={() => {
-              if (layout === 'aside') {
-                close();
-              }
-            }}
-          >
-            <p>
-              <strong>{product.title}</strong>
-            </p>
-          </Link>
-          <ProductPrice price={line?.cost?.totalAmount} />
-          <ul>
-            {selectedOptions.map((option) => (
-              <li key={option.name}>
-                <small>
-                  {option.name}: {option.value}
-                </small>
-              </li>
-            ))}
-          </ul>
-          {line?.attributes && line.attributes.length > 0 && (
-            <div className="cart-item-badges-strip">
-              {line.attributes
-                .filter((attr) => attr.value)
-                .map((attr) => {
-                  const rawKey = attr.key.replace(/^_/, '');
-                  const isSetup = rawKey.toLowerCase().includes('setup') || rawKey.toLowerCase().includes('bundle');
-                  const isDevice = rawKey.toLowerCase().includes('device') || rawKey.toLowerCase().includes('profile');
-                  
-                  return (
-                    <div
-                      key={attr.key}
-                      className={`cart-badge-chip ${isSetup ? 'chip-setup' : isDevice ? 'chip-device' : 'chip-meta'}`}
-                    >
-                      <span className="chip-icon">
-                        {isSetup ? '🖥️' : isDevice ? '⚡' : '🏷️'}
-                      </span>
-                      <span className="chip-key">{rawKey}:</span>
-                      <strong className="chip-val">{attr.value}</strong>
-                    </div>
-                  );
-                })}
+        <div className="cart-line-content">
+          <div className="cart-line-header">
+            <Link
+              prefetch="intent"
+              to={lineItemUrl}
+              onClick={() => {
+                if (layout === 'aside') {
+                  close();
+                }
+              }}
+            >
+              <p className="cart-line-title">
+                <strong>{product.title}</strong>
+              </p>
+            </Link>
+            <div className="cart-line-price">
+              <ProductPrice price={line?.cost?.totalAmount} />
             </div>
-          )}
+          </div>
 
-          <CartLineQuantity line={line} />
+          <div className="cart-line-meta">
+            <ul>
+              {selectedOptions.map((option) => (
+                <li key={option.name}>
+                  <small>
+                    {option.name}: {option.value}
+                  </small>
+                </li>
+              ))}
+            </ul>
+            {line?.attributes && line.attributes.length > 0 && (
+              <div className="cart-item-badges-strip">
+                {line.attributes
+                  .filter((attr) => attr.value)
+                  .map((attr) => {
+                    const rawKey = attr.key.replace(/^_/, '');
+                    const isSetup = rawKey.toLowerCase().includes('setup') || rawKey.toLowerCase().includes('bundle');
+                    const isDevice = rawKey.toLowerCase().includes('device') || rawKey.toLowerCase().includes('profile');
+
+                    return (
+                      <div
+                        key={attr.key}
+                        className={`cart-badge-chip ${isSetup ? 'chip-setup' : isDevice ? 'chip-device' : 'chip-meta'}`}
+                      >
+                        <span className="chip-icon">
+                          {isSetup ? '🖥️' : isDevice ? '⚡' : '🏷️'}
+                        </span>
+                        <span className="chip-key">{rawKey}:</span>
+                        <strong className="chip-val">{attr.value}</strong>
+                      </div>
+                    );
+                  })}
+              </div>
+            )}
+          </div>
+
+          <CartLineQuantity line={line} layout={layout} />
         </div>
       </div>
 
@@ -115,39 +122,39 @@ export function CartLineItem({layout, line, childrenMap}) {
  * Provides the controls to update the quantity of a line item in the cart.
  * These controls are disabled when the line item is new, and the server
  * hasn't yet responded that it was successfully added to the cart.
- * @param {{line: CartLine}}
+ * @param {{line: CartLine; layout: CartLayout}}
  */
-function CartLineQuantity({line}) {
+function CartLineQuantity({line, layout}) {
   if (!line || typeof line?.quantity === 'undefined') return null;
   const {id: lineId, quantity, isOptimistic} = line;
   const prevQuantity = Number(Math.max(0, quantity - 1).toFixed(0));
   const nextQuantity = Number((quantity + 1).toFixed(0));
 
   return (
-    <div className="cart-line-quantity">
-      <small>Quantity: {quantity} &nbsp;&nbsp;</small>
+    <div className={`cart-line-quantity ${layout === 'page' ? 'quantity-layout-page' : 'quantity-layout-aside'}`}>
+      <small>Qty: {quantity}</small>
       <CartLineUpdateButton lines={[{id: lineId, quantity: prevQuantity}]}>
         <button
+          className="qty-btn qty-minus"
           aria-label="Decrease quantity"
           disabled={quantity <= 1 || !!isOptimistic}
           name="decrease-quantity"
           value={prevQuantity}
         >
-          <span>&#8722; </span>
+          <span>−</span>
         </button>
       </CartLineUpdateButton>
-      &nbsp;
       <CartLineUpdateButton lines={[{id: lineId, quantity: nextQuantity}]}>
         <button
+          className="qty-btn qty-plus"
           aria-label="Increase quantity"
           name="increase-quantity"
           value={nextQuantity}
           disabled={!!isOptimistic}
         >
-          <span>&#43;</span>
+          <span>+</span>
         </button>
       </CartLineUpdateButton>
-      &nbsp;
       <CartLineRemoveButton lineIds={[lineId]} disabled={!!isOptimistic} />
     </div>
   );

@@ -42,7 +42,7 @@ export function CartMain({layout, cart: originalCart}) {
   const withDiscount =
     cart &&
     Boolean(cart?.discountCodes?.filter((code) => code.applicable)?.length);
-  const className = `cart-main ${withDiscount ? 'with-discount' : ''}`;
+  const className = `cart-main ${withDiscount ? 'with-discount' : ''} ${layout === 'aside' ? 'cart-layout-aside' : 'cart-layout-page'}`;
   const cartHasItems = cart?.totalQuantity ? cart.totalQuantity > 0 : false;
   const childrenMap = getLineItemChildrenMap(cart?.lines?.nodes ?? []);
 
@@ -51,46 +51,103 @@ export function CartMain({layout, cart: originalCart}) {
       className={className}
       aria-label={layout === 'page' ? 'Cart page' : 'Cart drawer'}
     >
-      <CartEmpty hidden={linesCount} layout={layout} />
-      {cartHasItems && <FreeShippingBar cart={cart} />}
-      {cart?.warnings && cart.warnings.length > 0 && (
+      {layout === 'page' ? (
+        // Full Page Layout with Two Columns
+        <div className="cart-page-layout">
+          {/* Left Column - Items */}
+          <div className="cart-left-column">
+            <CartEmpty hidden={linesCount} layout={layout} />
+            {cartHasItems && (
+              <>
+                <FreeShippingBar cart={cart} />
+                {cart?.warnings && cart.warnings.length > 0 && (
+                  <div style={{background: '#fffbeb', border: '1px solid #fcd34d', color: '#92400e', padding: '1rem', borderRadius: '6px', margin: '1rem 0'}}>
+                    <h4 style={{margin: '0 0 0.5rem 0', fontWeight: '700'}}>⚠️ Stock Availability Notice:</h4>
+                    <ul style={{margin: 0, paddingLeft: '1.25rem', fontSize: '0.9rem'}}>
+                      {cart.warnings.map((w, idx) => (
+                        <li key={idx}>{w.message || 'One of the items in your bundle experienced a stock change.'}</li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+                <div className="cart-items-container">
+                  <h2 className="cart-items-heading">Your Items</h2>
+                  <p id="cart-lines" className="sr-only">
+                    Line items
+                  </p>
+                  <ul aria-labelledby="cart-lines" className="cart-items-list">
+                    {(cart?.lines?.nodes ?? []).map((line) => {
+                      if (
+                        'parentRelationship' in line &&
+                        line.parentRelationship?.parent
+                      ) {
+                        return null;
+                      }
+                      return (
+                        <CartLineItem
+                          key={line.id}
+                          line={line}
+                          layout={layout}
+                          childrenMap={childrenMap}
+                        />
+                      );
+                    })}
+                  </ul>
+                </div>
+              </>
+            )}
+          </div>
 
-        <div style={{background: '#fffbeb', border: '1px solid #fcd34d', color: '#92400e', padding: '1rem', borderRadius: '6px', margin: '1rem 0'}}>
-          <h4 style={{margin: '0 0 0.5rem 0', fontWeight: '700'}}>⚠️ Stock Availability Notice:</h4>
-          <ul style={{margin: 0, paddingLeft: '1.25rem', fontSize: '0.9rem'}}>
-            {cart.warnings.map((w, idx) => (
-              <li key={idx}>{w.message || 'One of the items in your bundle experienced a stock change.'}</li>
-            ))}
-          </ul>
+          {/* Right Column - Summary, Discounts, Checkout */}
+          {cartHasItems && (
+            <div className="cart-right-column">
+              <CartSummary cart={cart} layout={layout} />
+            </div>
+          )}
         </div>
+      ) : (
+        // Aside/Drawer Layout (Original)
+        <>
+          <CartEmpty hidden={linesCount} layout={layout} />
+          {cartHasItems && <FreeShippingBar cart={cart} />}
+          {cart?.warnings && cart.warnings.length > 0 && (
+            <div style={{background: '#fffbeb', border: '1px solid #fcd34d', color: '#92400e', padding: '1rem', borderRadius: '6px', margin: '1rem 0'}}>
+              <h4 style={{margin: '0 0 0.5rem 0', fontWeight: '700'}}>⚠️ Stock Availability Notice:</h4>
+              <ul style={{margin: 0, paddingLeft: '1.25rem', fontSize: '0.9rem'}}>
+                {cart.warnings.map((w, idx) => (
+                  <li key={idx}>{w.message || 'One of the items in your bundle experienced a stock change.'}</li>
+                ))}
+              </ul>
+            </div>
+          )}
+          <div className="cart-details">
+            <p id="cart-lines" className="sr-only">
+              Line items
+            </p>
+            <div>
+              <ul aria-labelledby="cart-lines">
+                {(cart?.lines?.nodes ?? []).map((line) => {
+                  if (
+                    'parentRelationship' in line &&
+                    line.parentRelationship?.parent
+                  ) {
+                    return null;
+                  }
+                  return (
+                    <CartLineItem
+                      key={line.id}
+                      line={line}
+                      layout={layout}
+                      childrenMap={childrenMap}
+                    />
+                  );
+                })}
+              </ul>
+            </div>
+            {cartHasItems && <CartSummary cart={cart} layout={layout} />}
+          </div>
+        </>
       )}
-      <div className="cart-details">
-        <p id="cart-lines" className="sr-only">
-          Line items
-        </p>
-        <div>
-          <ul aria-labelledby="cart-lines">
-            {(cart?.lines?.nodes ?? []).map((line) => {
-              // we do not render non-parent lines at the root of the cart
-              if (
-                'parentRelationship' in line &&
-                line.parentRelationship?.parent
-              ) {
-                return null;
-              }
-              return (
-                <CartLineItem
-                  key={line.id}
-                  line={line}
-                  layout={layout}
-                  childrenMap={childrenMap}
-                />
-              );
-            })}
-          </ul>
-        </div>
-        {cartHasItems && <CartSummary cart={cart} layout={layout} />}
-      </div>
     </section>
   );
 }

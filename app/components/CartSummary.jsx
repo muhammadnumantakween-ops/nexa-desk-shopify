@@ -99,15 +99,24 @@ function CartCheckoutActions({checkoutUrl}) {
         target="_self"
         className="btn-luxury-checkout"
       >
-        <span>Secure Checkout</span>
+        <span className="checkout-text">Secure Checkout</span>
         <span className="checkout-arrow">→</span>
       </a>
       <div className="cart-trust-micro">
-        <span>🔒 256-Bit SSL</span>
-        <span>•</span>
-        <span>🇬🇧 UK Same-Day Dispatch</span>
-        <span>•</span>
-        <span>30-Day Trial</span>
+        <div className="trust-item">
+          <span className="trust-icon">🔒</span>
+          <span className="trust-label">256-Bit SSL</span>
+        </div>
+        <div className="trust-divider">•</div>
+        <div className="trust-item">
+          <span className="trust-icon">🇬🇧</span>
+          <span className="trust-label">UK Same-Day Dispatch</span>
+        </div>
+        <div className="trust-divider">•</div>
+        <div className="trust-item">
+          <span className="trust-icon">⏱️</span>
+          <span className="trust-label">30-Day Trial</span>
+        </div>
       </div>
     </div>
   );
