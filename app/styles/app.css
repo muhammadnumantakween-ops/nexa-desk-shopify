@@ -1644,10 +1644,25 @@ button.reset:hover:not(:has(> *)) {
 /* Cart Page Wrapper */
 .cart,
 .cart-page-wrapper,
-.cart-layout-container {
+.cart-layout-container,
+.cart-page-full {
   width: 100%;
   background: linear-gradient(135deg, #030712 0%, #0f172a 100%);
   min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.cart-page-full > header {
+  flex-shrink: 0;
+}
+
+.cart-page-full > section {
+  flex: 1;
+}
+
+.cart-page-full > footer {
+  flex-shrink: 0;
 }
 
 .cart > h1 {

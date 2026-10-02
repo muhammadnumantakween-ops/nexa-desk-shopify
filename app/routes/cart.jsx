@@ -1,6 +1,9 @@
-import {useLoaderData, data} from 'react-router';
+import {useLoaderData, data, useLocation} from 'react-router';
 import {CartForm} from '@shopify/hydrogen';
 import {CartMain} from '~/components/CartMain';
+import {Header, HeaderMenu} from '~/components/Header';
+import {Footer} from '~/components/Footer';
+import {useRouteLoaderData} from 'react-router';
 
 /**
  * @type {Route.MetaFunction}
@@ -43,19 +46,14 @@ export async function action({request, context}) {
       break;
     case CartForm.ACTIONS.DiscountCodesUpdate: {
       const formDiscountCode = inputs.discountCode;
-
       const discountCodes = formDiscountCode ? [formDiscountCode] : [];
-
       discountCodes.push(...inputs.discountCodes);
-
       result = await cart.updateDiscountCodes(discountCodes);
       break;
     }
     case CartForm.ACTIONS.GiftCardCodesAdd: {
       const formGiftCardCode = inputs.giftCardCode;
-
       const giftCardCodes = formGiftCardCode ? [formGiftCardCode] : [];
-
       result = await cart.addGiftCardCodes(giftCardCodes);
       break;
     }
@@ -105,13 +103,29 @@ export async function loader({context}) {
   return await cart.get();
 }
 
-export default function Cart() {
+export default function CartPage() {
   /** @type {LoaderReturnData} */
   const cart = useLoaderData();
+  const rootData = useRouteLoaderData('root');
 
   return (
-    <div className="cart-page-wrapper">
+    <div className="cart-page-full">
+      {rootData?.header && (
+        <Header
+          header={rootData.header}
+          cart={rootData.cart}
+          isLoggedIn={rootData.isLoggedIn}
+          publicStoreDomain={rootData.publicStoreDomain}
+        />
+      )}
       <CartMain layout="page" cart={cart} />
+      {rootData?.footer && (
+        <Footer
+          footer={rootData.footer}
+          header={rootData.header}
+          publicStoreDomain={rootData.publicStoreDomain}
+        />
+      )}
     </div>
   );
 }
@@ -120,4 +134,3 @@ export default function Cart() {
 /** @typedef {import('./+types/cart').Route} Route */
 /** @typedef {import('@shopify/hydrogen').CartQueryDataReturn} CartQueryDataReturn */
 /** @typedef {ReturnType<typeof useLoaderData<typeof loader>>} LoaderReturnData */
-/** @typedef {ReturnType<typeof useActionData<typeof action>>} ActionReturnData */
