@@ -40,9 +40,9 @@ jobs:
         run: npm run build
 
       - name: Deploy to Oxygen
-        run: npx shopify hydrogen deploy --env production --metadata-description "Auto-deploy: NexaDesk Cart (${{ github.sha }})"
         env:
           SHOPIFY_HYDROGEN_DEPLOYMENT_TOKEN: ${{ secrets.SHOPIFY_HYDROGEN_DEPLOYMENT_TOKEN }}
+        run: npx shopify hydrogen deploy --env production
 
       - name: Create deployment status
         if: success()
