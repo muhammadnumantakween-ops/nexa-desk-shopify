@@ -10,15 +10,17 @@ const FALLBACK_ARTICLES = {
     title: 'How to Connect Dual 4K Screens to a Mac Without Driver Glitches',
     publishedAt: '2026-09-28T09:00:00Z',
     author: {name: 'NexaDesk UK Engineering Team'},
+    tag: 'Mac Hardware',
+    readTime: '4 min read',
     image: {
       id: 'art-img-1',
-      url: 'https://cdn.shopify.com/s/files/1/0688/1755/1584/files/dual_monitor_setup.jpg?v=1',
+      url: 'https://images.unsplash.com/photo-1593642702821-c8da6771f0c6?auto=format&fit=crop&w=1200&q=80',
       altText: 'Dual 4K workstation setup with clean cable management',
       width: 1200,
       height: 800,
     },
     contentHtml: `
-      <p>Connecting two external displays to Apple Silicon (M1/M2/M3/M4) or Intel MacBooks is one of the most common challenges remote workers face.</p>
+      <p class="article-lead-paragraph">Connecting two external displays to Apple Silicon (M1/M2/M3/M4) or Intel MacBooks is one of the most common challenges remote workers face.</p>
       
       <h2>Why macOS Handles Dual Displays Differently</h2>
       <p>Unlike Windows machines that support DisplayPort MST (Multi-Stream Transport) daisy-chaining over a single cable, macOS requires separate display streams or Thunderbolt architecture to output extended independent desktops.</p>
@@ -40,15 +42,17 @@ const FALLBACK_ARTICLES = {
     title: 'The Ergonomic Desk Blueprint: Banishing Neck Strain & Cable Clutter',
     publishedAt: '2026-09-25T11:30:00Z',
     author: {name: 'Ergonomics Specialist, NexaDesk UK'},
+    tag: 'Ergonomics',
+    readTime: '5 min read',
     image: {
       id: 'art-img-2',
-      url: 'https://cdn.shopify.com/s/files/1/0688/1755/1584/files/ergonomic_desk_workspace.jpg?v=1',
+      url: 'https://images.unsplash.com/photo-1527443224154-c4a3942d3acf?auto=format&fit=crop&w=1200&q=80',
       altText: 'Ergonomic tidy workspace with laptop riser',
       width: 1200,
       height: 800,
     },
     contentHtml: `
-      <p>Spending 8+ hours a day at your desk shouldn't lead to chronic neck stiffness, shoulder hunching, or a distracting mess of power bricks.</p>
+      <p class="article-lead-paragraph">Spending 8+ hours a day at your desk shouldn't lead to chronic neck stiffness, shoulder hunching, or a distracting mess of power bricks.</p>
 
       <h2>1. The Top-Third Eye Level Rule</h2>
       <p>Your primary monitor's upper third should align directly with your horizontal eye line. When looking at a laptop flat on your desk, your cervical spine bears up to 27kg of forward gravitational load. Elevate your screen using an adjustable aluminum riser to keep your spine neutral.</p>
@@ -64,15 +68,17 @@ const FALLBACK_ARTICLES = {
     title: 'USB-C Alt Mode vs Thunderbolt 4: What You Actually Need',
     publishedAt: '2026-09-20T14:15:00Z',
     author: {name: 'NexaDesk UK Engineering Team'},
+    tag: 'Specs & Power',
+    readTime: '3 min read',
     image: {
       id: 'art-img-3',
-      url: 'https://cdn.shopify.com/s/files/1/0688/1755/1584/files/usb_c_cables_dock.jpg?v=1',
+      url: 'https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?auto=format&fit=crop&w=1200&q=80',
       altText: 'Close up of high speed USB-C cable and docking station',
       width: 1200,
       height: 800,
     },
     contentHtml: `
-      <p>The USB-C connector shape is universal, but the electrical capabilities behind that oval port vary significantly between laptop manufacturers.</p>
+      <p class="article-lead-paragraph">The USB-C connector shape is universal, but the electrical capabilities behind that oval port vary significantly between laptop manufacturers.</p>
 
       <h2>What is USB-C DisplayPort Alt Mode?</h2>
       <p>DisplayPort Alternate Mode allows a USB-C port to transmit native DisplayPort video signals directly to external screens alongside high-speed USB data and Power Delivery (PD) charging.</p>
@@ -132,7 +138,6 @@ async function loadCriticalData({context, request, params}) {
       return {article: blog.articleByHandle};
     }
 
-    // Check curated fallback
     const fallback = FALLBACK_ARTICLES[articleHandle];
     if (fallback) {
       return {
@@ -146,7 +151,6 @@ async function loadCriticalData({context, request, params}) {
 
     throw new Response('Article not found', {status: 404});
   } catch (error) {
-    // If Shopify query failed, check curated fallback
     const fallback = FALLBACK_ARTICLES[articleHandle];
     if (fallback) {
       return {
@@ -178,54 +182,85 @@ export default function Article() {
       }).format(new Date(article.publishedAt))
     : 'Recent';
 
+  const tag = article.tag || 'Desk Engineering';
+  const readTime = article.readTime || '4 min read';
+
   return (
-    <article className="page-article-wrapper">
-      <div className="article-hero-header">
-        <div className="article-breadcrumb">
-          <Link to="/">Home</Link>
-          <span className="breadcrumb-separator">/</span>
-          <Link to="/blogs/journal">Desk Tips & Guides</Link>
-          <span className="breadcrumb-separator">/</span>
-          <span className="breadcrumb-current">{title}</span>
-        </div>
+    <article className="impeccable-static-page article-page-wrapper">
+      <div className="ambient-glow ambient-glow-gold" />
+      <div className="ambient-glow ambient-glow-cyan" />
 
-        <h1 className="article-main-title">{title}</h1>
+      <div className="impeccable-page-container article-narrow-container">
+        {/* Breadcrumb Navigation */}
+        <nav className="luxury-breadcrumb" aria-label="Breadcrumb">
+          <Link to="/" className="breadcrumb-link">Home</Link>
+          <span className="breadcrumb-divider">/</span>
+          <Link to="/blogs/journal" className="breadcrumb-link">Desk Tips & Guides</Link>
+          <span className="breadcrumb-divider">/</span>
+          <span className="breadcrumb-active">{title}</span>
+        </nav>
 
-        <div className="article-meta-row">
-          <span className="article-author-badge">✍️ {author?.name || 'NexaDesk UK'}</span>
-          <span className="meta-separator">•</span>
-          <time dateTime={article.publishedAt}>{publishedDate}</time>
-          <span className="meta-separator">•</span>
-          <span className="read-time-pill">4 min read</span>
-        </div>
-      </div>
+        {/* Article Luxury Hero */}
+        <header className="page-luxury-hero article-hero-center">
+          <div className="article-pill-group">
+            <span className="page-luxury-badge">
+              <span className="badge-sparkle">✦</span> {tag}
+            </span>
+            <span className="read-time-badge">{readTime}</span>
+          </div>
 
-      {image?.url && (
-        <div className="article-featured-image-box">
-          <img
-            src={image.url}
-            alt={image.altText || title}
-            className="article-featured-img"
+          <h1 className="page-luxury-title article-main-headline">{title}</h1>
+
+          <div className="article-author-byline">
+            <div className="author-avatar-chip">🇬🇧</div>
+            <div className="author-info-text">
+              <span className="author-name">{author?.name || 'NexaDesk UK Engineering Team'}</span>
+              <span className="article-pub-date">Published on {publishedDate}</span>
+            </div>
+          </div>
+        </header>
+
+        {/* Featured Image */}
+        {image?.url && (
+          <div className="article-cinematic-banner">
+            <img
+              src={image.url}
+              alt={image.altText || title}
+              className="cinematic-hero-img"
+            />
+          </div>
+        )}
+
+        {/* Article Prose Surface */}
+        <div className="page-card-surface article-reading-surface">
+          <main
+            dangerouslySetInnerHTML={{__html: contentHtml}}
+            className="prose-luxury-content article-prose-body"
           />
         </div>
-      )}
 
-      <div
-        dangerouslySetInnerHTML={{__html: contentHtml}}
-        className="article-body-content"
-      />
-
-      <div className="article-bottom-builder-cta">
-        <div className="cta-box-inner">
-          <h3>Need Hardware That Fits Your Exact Setup?</h3>
-          <p>
-            Eliminate dongle clutter and guesswork. Our 4-step wizard matches your laptop to
-            certified docks and dual displays with 1-click UK dispatch.
-          </p>
-          <Link to="/find-my-setup" className="btn-builder-gold">
-            Launch Find My Setup Configurator →
-          </Link>
-        </div>
+        {/* Bottom Configurator CTA */}
+        <section className="luxury-cta-banner">
+          <div className="cta-ambient-circle" />
+          <div className="cta-inner-layout">
+            <div className="cta-text-block">
+              <span className="cta-eyebrow">Zero Cable Clutter</span>
+              <h2 className="cta-heading">Find Hardware Tested For Your Setup</h2>
+              <p className="cta-description">
+                Don't guess with dongles. Use our 4-step wizard to find docking stations and
+                ergonomic risers engineered to work seamlessly with your exact machine.
+              </p>
+            </div>
+            <div className="cta-action-block">
+              <Link to="/find-my-setup" className="btn-luxury-primary">
+                Launch Setup Finder →
+              </Link>
+              <Link to="/blogs/journal" className="btn-luxury-secondary">
+                ← Back to All Guides
+              </Link>
+            </div>
+          </div>
+        </section>
       </div>
     </article>
   );

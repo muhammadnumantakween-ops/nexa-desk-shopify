@@ -1,6 +1,5 @@
 import {Link, useLoaderData} from 'react-router';
 import {Image, getPaginationVariables} from '@shopify/hydrogen';
-import {PaginatedResourceSection} from '~/components/PaginatedResourceSection';
 import {redirectIfHandleIsLocalized} from '~/lib/redirect';
 
 /**
@@ -10,7 +9,7 @@ const FALLBACK_BLOGS = {
   journal: {
     title: 'NexaDesk Journal & Workspace Guides',
     handle: 'journal',
-    description: 'Expert UK advice on ergonomic desk posture, dual-screen productivity, and cable management.',
+    description: 'Expert UK engineering advice on ergonomic desk posture, dual-screen productivity, and cable management.',
     articles: {
       nodes: [
         {
@@ -19,6 +18,8 @@ const FALLBACK_BLOGS = {
           title: 'How to Connect Dual 4K Screens to a Mac Without Driver Glitches',
           publishedAt: '2026-09-28T09:00:00Z',
           excerpt: 'Why macOS handles multi-stream transport (MST) differently from Windows, and how our D2 Link 100 dock solves it with clean hardware dual-output feeds.',
+          readTime: '4 min read',
+          tag: 'Mac Hardware',
           contentHtml: `
             <p>Connecting two external displays to Apple Silicon (M1/M2/M3/M4) or Intel MacBooks is one of the most common challenges remote workers face.</p>
             <h3>Why macOS Handles Dual Displays Differently</h3>
@@ -28,7 +29,7 @@ const FALLBACK_BLOGS = {
           `,
           image: {
             id: 'art-img-1',
-            url: 'https://cdn.shopify.com/s/files/1/0688/1755/1584/files/dual_monitor_setup.jpg?v=1',
+            url: 'https://images.unsplash.com/photo-1593642702821-c8da6771f0c6?auto=format&fit=crop&w=1200&q=80',
             altText: 'Dual 4K workstation setup with clean cable management',
             width: 1200,
             height: 800,
@@ -42,6 +43,8 @@ const FALLBACK_BLOGS = {
           title: 'The Ergonomic Desk Blueprint: Banishing Neck Strain & Cable Clutter',
           publishedAt: '2026-09-25T11:30:00Z',
           excerpt: 'Learn the 90-degree arm angle rule, monitor eye-level alignment, and why single-cable docking improves daily focus.',
+          readTime: '5 min read',
+          tag: 'Ergonomics',
           contentHtml: `
             <p>Spending 8+ hours a day at your desk shouldn't lead to chronic neck stiffness or a tangle of charging cords.</p>
             <h3>1. The Eye-Level Monitor Rule</h3>
@@ -51,7 +54,7 @@ const FALLBACK_BLOGS = {
           `,
           image: {
             id: 'art-img-2',
-            url: 'https://cdn.shopify.com/s/files/1/0688/1755/1584/files/ergonomic_desk_workspace.jpg?v=1',
+            url: 'https://images.unsplash.com/photo-1527443224154-c4a3942d3acf?auto=format&fit=crop&w=1200&q=80',
             altText: 'Ergonomic tidy workspace with laptop riser',
             width: 1200,
             height: 800,
@@ -65,13 +68,15 @@ const FALLBACK_BLOGS = {
           title: 'USB-C Alt Mode vs Thunderbolt 4: What You Actually Need',
           publishedAt: '2026-09-20T14:15:00Z',
           excerpt: 'A plain-English guide decoding charging wattages, DisplayPort Alt Mode bandwidth, and matching the right dock to your laptop.',
+          readTime: '3 min read',
+          tag: 'Specs & Power',
           contentHtml: `
             <p>Not all USB-C ports on laptops are created equal. Some carry high-speed data only, while others deliver DisplayPort video and 100W bi-directional charging.</p>
             <p>We test every NexaDesk hardware component in our UK depot to guarantee 100% plug-and-play compliance with Windows and macOS laptops.</p>
           `,
           image: {
             id: 'art-img-3',
-            url: 'https://cdn.shopify.com/s/files/1/0688/1755/1584/files/usb_c_cables_dock.jpg?v=1',
+            url: 'https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?auto=format&fit=crop&w=1200&q=80',
             altText: 'Close up of high speed USB-C cable and docking station',
             width: 1200,
             height: 800,
@@ -108,8 +113,6 @@ export async function loader(args) {
 
 /**
  * Load data necessary for rendering content above the fold.
- * Gracefully falls back to curated editorial guides if the blog or articles
- * haven't been created yet in the Shopify admin.
  * @param {Route.LoaderArgs}
  */
 async function loadCriticalData({context, request, params}) {
@@ -134,7 +137,6 @@ async function loadCriticalData({context, request, params}) {
       return {blog};
     }
 
-    // If Shopify returned an empty blog or no articles, fall back to our editorial guide collection
     const fallback = FALLBACK_BLOGS[requestedHandle] || FALLBACK_BLOGS.journal;
     return {
       blog: {
@@ -143,7 +145,6 @@ async function loadCriticalData({context, request, params}) {
       },
     };
   } catch (error) {
-    console.error('Failed to load blog from Shopify storefront API, using curated fallback:', error);
     const fallback = FALLBACK_BLOGS[requestedHandle] || FALLBACK_BLOGS.journal;
     return {
       blog: {
@@ -164,55 +165,83 @@ export default function Blog() {
   const articles = blog?.articles || {nodes: []};
 
   return (
-    <div className="page-blog-wrapper">
-      <div className="blog-hero-header">
-        <div className="blog-breadcrumb">
-          <Link to="/">Home</Link>
-          <span className="breadcrumb-separator">/</span>
-          <span className="breadcrumb-current">Desk Tips & Guides</span>
-        </div>
-        <span className="blog-badge-pill">💡 Workspace Ergonomics & Engineering Guides</span>
-        <h1 className="blog-main-title">{blog.title}</h1>
-        <p className="blog-lead-text">
-          {blog.description ||
-            'Honest, practical guidance on setting up dual monitors, eradicating cable clutter, and maximizing your desk comfort.'}
-        </p>
-      </div>
+    <div className="impeccable-static-page journal-page-wrapper">
+      <div className="ambient-glow ambient-glow-gold" />
+      <div className="ambient-glow ambient-glow-cyan" />
 
-      <div className="blog-articles-container">
-        {articles.nodes && articles.nodes.length > 0 ? (
-          <div className="blog-cards-grid">
-            {articles.nodes.map((article, index) => (
-              <ArticleCard
-                article={article}
-                key={article.id || index}
-                loading={index < 2 ? 'eager' : 'lazy'}
-              />
-            ))}
-          </div>
-        ) : (
-          <div className="blog-empty-box">
-            <h3>No articles published yet</h3>
-            <p>Check back soon for new guides and desk advice from our UK engineering team.</p>
-            <Link to="/" className="btn-return-home">
-              Return to Store
-            </Link>
-          </div>
-        )}
-      </div>
+      <div className="impeccable-page-container">
+        {/* Breadcrumb Navigation */}
+        <nav className="luxury-breadcrumb" aria-label="Breadcrumb">
+          <Link to="/" className="breadcrumb-link">Home</Link>
+          <span className="breadcrumb-divider">/</span>
+          <span className="breadcrumb-active">Desk Tips & Guides</span>
+        </nav>
 
-      {/* Bottom Builder CTA */}
-      <div className="blog-bottom-cta">
-        <div className="cta-content">
-          <h3>Ready to upgrade your desk setup?</h3>
-          <p>
-            Use our interactive setup builder to find certified docks and displays that work
-            flawlessly with your exact laptop model.
+        {/* Page Luxury Hero */}
+        <header className="page-luxury-hero">
+          <span className="page-luxury-badge">
+            <span className="badge-sparkle">✦</span> NexaDesk Editorial
+          </span>
+          <h1 className="page-luxury-title">{blog.title}</h1>
+          <p className="page-luxury-subtitle">
+            {blog.description ||
+              'Practical engineering advice on dual monitors, eradicating cable clutter, and maximizing workspace ergonomics.'}
           </p>
-          <Link to="/find-my-setup" className="btn-builder-gold">
-            Launch Setup Configurator →
-          </Link>
+        </header>
+
+        {/* Blog Category Filters */}
+        <div className="journal-filter-strip">
+          <span className="journal-pill is-active">All Guides</span>
+          <span className="journal-pill">Mac Compatibility</span>
+          <span className="journal-pill">Ergonomics & Posture</span>
+          <span className="journal-pill">Docking Stations</span>
         </div>
+
+        {/* Articles Grid */}
+        <div className="journal-articles-container">
+          {articles.nodes && articles.nodes.length > 0 ? (
+            <div className="luxury-blog-grid">
+              {articles.nodes.map((article, index) => (
+                <ArticleCard
+                  article={article}
+                  key={article.id || index}
+                  loading={index < 2 ? 'eager' : 'lazy'}
+                />
+              ))}
+            </div>
+          ) : (
+            <div className="empty-state-card">
+              <h3>No articles published yet</h3>
+              <p>Check back soon for new guides and advice from our UK engineering team.</p>
+              <Link to="/" className="btn-luxury-primary">
+                Return to Store
+              </Link>
+            </div>
+          )}
+        </div>
+
+        {/* Bottom Configurator CTA */}
+        <section className="luxury-cta-banner">
+          <div className="cta-ambient-circle" />
+          <div className="cta-inner-layout">
+            <div className="cta-text-block">
+              <span className="cta-eyebrow">Zero Guesswork Guarantee</span>
+              <h2 className="cta-heading">Ready to Upgrade Your Desk Setup?</h2>
+              <p className="cta-description">
+                Use our interactive setup builder to find certified docks and displays that work
+                flawlessly with your exact laptop model.
+              </p>
+            </div>
+            <div className="cta-action-block">
+              <Link to="/find-my-setup" className="btn-luxury-primary">
+                Launch Setup Finder →
+              </Link>
+              <Link to="/compare" className="btn-luxury-secondary">
+                Compare Docks Side-by-Side
+              </Link>
+            </div>
+          </div>
+        </section>
       </div>
     </div>
   );
@@ -228,12 +257,14 @@ function ArticleCard({article, loading}) {
     : 'Recent';
 
   const blogHandle = article.blog?.handle || 'journal';
+  const tag = article.tag || 'Desk Engineering';
+  const readTime = article.readTime || '4 min read';
 
   return (
-    <article className="blog-card-item">
+    <article className="luxury-article-card">
       <Link
         to={`/blogs/${blogHandle}/${article.handle}`}
-        className="blog-card-media-box"
+        className="luxury-card-media-box"
         prefetch="intent"
       >
         {article.image?.url ? (
@@ -241,27 +272,30 @@ function ArticleCard({article, loading}) {
             src={article.image.url}
             alt={article.image.altText || article.title}
             loading={loading}
-            className="blog-card-img"
+            className="luxury-card-img"
           />
         ) : (
-          <div className="blog-card-placeholder-img">
+          <div className="luxury-placeholder-box">
             <span style={{fontSize: '2.5rem'}}>🖥️</span>
           </div>
         )}
-        <span className="blog-card-date-badge">{publishedAt}</span>
+        <div className="luxury-card-badges">
+          <span className="card-tag-pill">{tag}</span>
+          <span className="card-read-pill">{readTime}</span>
+        </div>
       </Link>
 
-      <div className="blog-card-body">
-        <h2 className="blog-card-title">
+      <div className="luxury-card-content">
+        <h2 className="luxury-card-heading">
           <Link to={`/blogs/${blogHandle}/${article.handle}`} prefetch="intent">
             {article.title}
           </Link>
         </h2>
-        {article.excerpt && <p className="blog-card-excerpt">{article.excerpt}</p>}
-        <div className="blog-card-footer">
-          <span className="blog-author-tag">{article.author?.name || 'NexaDesk Engineering'}</span>
-          <Link to={`/blogs/${blogHandle}/${article.handle}`} className="blog-read-more-link">
-            Read Guide →
+        {article.excerpt && <p className="luxury-card-excerpt">{article.excerpt}</p>}
+        <div className="luxury-card-footer">
+          <span className="card-author-text">{article.author?.name || 'NexaDesk UK Team'}</span>
+          <Link to={`/blogs/${blogHandle}/${article.handle}`} className="card-read-action">
+            Read Full Guide <span className="arrow-icon">→</span>
           </Link>
         </div>
       </div>
