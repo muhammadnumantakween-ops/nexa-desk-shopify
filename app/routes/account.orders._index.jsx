@@ -59,7 +59,11 @@ export default function Orders() {
   const {orders} = customer;
 
   return (
-    <div className="orders">
+    <div className="account-orders-page">
+      <div className="account-orders-header">
+        <h1 className="account-title">Your Orders</h1>
+        <p className="account-subtitle">Track and manage all your NexaDesk purchases</p>
+      </div>
       <OrderSearchForm currentFilters={filters} />
       <OrdersTable orders={orders} filters={filters} />
     </div>
@@ -93,22 +97,20 @@ function OrdersTable({orders, filters}) {
  */
 function EmptyOrders({hasFilters = false}) {
   return (
-    <div>
+    <div className="empty-orders">
       {hasFilters ? (
         <>
-          <p>No orders found matching your search.</p>
-          <br />
-          <p>
-            <Link to="/account/orders">Clear filters →</Link>
-          </p>
+          <div className="empty-orders-icon">🔍</div>
+          <h3 className="empty-orders-title">No Orders Found</h3>
+          <p className="empty-orders-desc">No orders match your search criteria. Try adjusting your filters.</p>
+          <Link to="/account/orders" className="empty-orders-link">Clear Filters →</Link>
         </>
       ) : (
         <>
-          <p>You haven&apos;t placed any orders yet.</p>
-          <br />
-          <p>
-            <Link to="/collections">Start Shopping →</Link>
-          </p>
+          <div className="empty-orders-icon">📦</div>
+          <h3 className="empty-orders-title">No Orders Yet</h3>
+          <p className="empty-orders-desc">You haven&apos;t placed any orders yet. Start exploring our premium docking solutions and workstation accessories.</p>
+          <Link to="/collections" className="empty-orders-link">Browse Products →</Link>
         </>
       )}
     </div>
@@ -152,49 +154,38 @@ function OrderSearchForm({currentFilters}) {
     <form
       ref={formRef}
       onSubmit={handleSubmit}
-      className="order-search-form"
+      className="account-orders-filter"
       aria-label="Search orders"
     >
-      <fieldset className="order-search-fieldset">
-        <legend className="order-search-legend">Filter Orders</legend>
-
-        <div className="order-search-inputs">
-          <input
-            type="search"
-            name={ORDER_FILTER_FIELDS.NAME}
-            placeholder="Order #"
-            aria-label="Order number"
-            defaultValue={currentFilters.name || ''}
-            className="order-search-input"
-          />
-          <input
-            type="search"
-            name={ORDER_FILTER_FIELDS.CONFIRMATION_NUMBER}
-            placeholder="Confirmation #"
-            aria-label="Confirmation number"
-            defaultValue={currentFilters.confirmationNumber || ''}
-            className="order-search-input"
-          />
-        </div>
-
-        <div className="order-search-buttons">
-          <button type="submit" disabled={isSearching}>
-            {isSearching ? 'Searching' : 'Search'}
-          </button>
-          {hasFilters && (
-            <button
-              type="button"
-              disabled={isSearching}
-              onClick={() => {
-                setSearchParams(new URLSearchParams());
-                formRef.current?.reset();
-              }}
-            >
-              Clear
-            </button>
-          )}
-        </div>
-      </fieldset>
+      <input
+        type="search"
+        name={ORDER_FILTER_FIELDS.NAME}
+        placeholder="Search by order number..."
+        aria-label="Order number"
+        defaultValue={currentFilters.name || ''}
+      />
+      <input
+        type="search"
+        name={ORDER_FILTER_FIELDS.CONFIRMATION_NUMBER}
+        placeholder="Search by confirmation #..."
+        aria-label="Confirmation number"
+        defaultValue={currentFilters.confirmationNumber || ''}
+      />
+      <button type="submit" disabled={isSearching}>
+        {isSearching ? '⏳ Searching...' : '🔍 Search'}
+      </button>
+      {hasFilters && (
+        <button
+          type="button"
+          disabled={isSearching}
+          onClick={() => {
+            setSearchParams(new URLSearchParams());
+            formRef.current?.reset();
+          }}
+        >
+          ✕ Clear
+        </button>
+      )}
     </form>
   );
 }
@@ -204,23 +195,48 @@ function OrderSearchForm({currentFilters}) {
  */
 function OrderItem({order}) {
   const fulfillmentStatus = flattenConnection(order.fulfillments)[0]?.status;
+  const orderDate = new Date(order.processedAt);
+  const statusClass = fulfillmentStatus?.toLowerCase() || 'pending';
+
   return (
-    <>
-      <fieldset>
-        <Link to={`/account/orders/${btoa(order.id)}`}>
-          <strong>#{order.number}</strong>
-        </Link>
-        <p>{new Date(order.processedAt).toDateString()}</p>
+    <div className="order-card">
+      <div className="order-card-header">
+        <span className="order-number">Order #{order.number}</span>
+        <span className={`order-status ${statusClass}`}>
+          {fulfillmentStatus || 'Processing'}
+        </span>
+      </div>
+
+      <div className="order-card-body">
+        <div className="order-detail">
+          <span className="order-detail-label">Order Date</span>
+          <span className="order-detail-value">{orderDate.toLocaleDateString()}</span>
+        </div>
+
         {order.confirmationNumber && (
-          <p>Confirmation: {order.confirmationNumber}</p>
+          <div className="order-detail">
+            <span className="order-detail-label">Confirmation #</span>
+            <span className="order-detail-value">{order.confirmationNumber}</span>
+          </div>
         )}
-        <p>{order.financialStatus}</p>
-        {fulfillmentStatus && <p>{fulfillmentStatus}</p>}
-        <Money data={order.totalPrice} />
-        <Link to={`/account/orders/${btoa(order.id)}`}>View Order →</Link>
-      </fieldset>
-      <br />
-    </>
+
+        <div className="order-detail">
+          <span className="order-detail-label">Status</span>
+          <span className="order-detail-value">{order.financialStatus}</span>
+        </div>
+      </div>
+
+      <div className="order-card-footer">
+        <div className="order-total">
+          <Money data={order.totalPrice} />
+        </div>
+        <div className="order-actions">
+          <Link to={`/account/orders/${btoa(order.id)}`} className="order-btn">
+            View Details →
+          </Link>
+        </div>
+      </div>
+    </div>
   );
 }
 

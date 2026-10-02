@@ -94,6 +94,11 @@ export async function loader(args) {
       country: args.context.storefront.i18n.country,
       language: args.context.storefront.i18n.language,
     },
+    oauth: {
+      authorizeEndpoint: env.OAUTH_AUTHORIZE_ENDPOINT,
+      tokenEndpoint: env.OAUTH_TOKEN_ENDPOINT,
+      logoutEndpoint: env.OAUTH_LOGOUT_ENDPOINT,
+    },
   };
 }
 
