@@ -59,8 +59,11 @@ export function links() {
       href: 'https://shop.app',
     },
     {rel: 'icon', type: 'image/svg+xml', href: favicon},
+    {rel: 'apple-touch-icon', href: favicon},
+    {rel: 'shortcut icon', href: favicon},
   ];
 }
+
 
 /**
  * @param {Route.LoaderArgs} args

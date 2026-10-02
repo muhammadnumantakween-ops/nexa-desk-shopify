@@ -1,5 +1,7 @@
 import {Suspense, useState, useEffect} from 'react';
 import {Await, NavLink} from 'react-router';
+import {NexaLogo} from '~/components/NexaLogo';
+
 
 /**
  * Modern Dark-Mode Mega Footer (UI-FOOT-01 & UI-FOOT-02)
@@ -99,9 +101,10 @@ export function Footer({footer: footerPromise, header, publicStoreDomain}) {
             {/* Column 1: Brand & UK Dispatch Details */}
             <div className="footer-col brand-col">
               <div className="footer-brand-title">
-                <span className="brand-dot-footer" />
+                <NexaLogo size={28} className="footer-logo-icon" />
                 <span>NexaDesk</span>
               </div>
+
               <p className="footer-brand-tagline">
                 We make tidy, comfortable desk setups simple for anyone working from home or in the office. Everything you need, guaranteed to work together.
               </p>

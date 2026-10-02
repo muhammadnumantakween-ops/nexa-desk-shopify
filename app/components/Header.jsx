@@ -3,6 +3,8 @@ import {Await, NavLink, useAsyncValue, useNavigate} from 'react-router';
 import {useAnalytics, useOptimisticCart} from '@shopify/hydrogen';
 import {useAside} from '~/components/Aside';
 import {useSetupSession} from '~/hooks/useSetupSession';
+import {NexaLogo} from '~/components/NexaLogo';
+
 
 /**
  * Navigation Architecture with Grouped Sub-menus
@@ -134,10 +136,11 @@ export function Header({header, isLoggedIn, cart, publicStoreDomain}) {
     <header className={`header-wrapper ${isScrolled ? 'is-scrolled' : ''}`}>
       <div className="header-container">
         {/* Brand / Logo */}
-        <NavLink prefetch="intent" to="/" className="header-brand" end>
-          <span className="brand-dot" />
+        <NavLink prefetch="intent" to="/" className="header-brand" end aria-label="NexaDesk Home">
+          <NexaLogo size={32} className="header-logo-icon" />
           <span className="brand-name">{shop.name || 'NexaDesk'}</span>
         </NavLink>
+
 
         {/* Desktop Navigation with Dropdowns */}
         <HeaderMenu
