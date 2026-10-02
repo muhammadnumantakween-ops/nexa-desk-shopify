@@ -1,4 +1,4 @@
-import React from 'react';
+import React, {useState} from 'react';
 import {Link} from 'react-router';
 import {getStatusIllustration} from '~/components/StatusIllustrations';
 
@@ -87,6 +87,8 @@ export function ErrorDisplay({
   showRetryButton = true,
   onRetry,
 }) {
+  const [copied, setCopied] = useState(false);
+
   const code = Number(status) || 500;
   const meta = STATUS_METADATA[code] || {
     badge: `Status ${code}`,
@@ -98,6 +100,15 @@ export function ErrorDisplay({
 
   const displayTitle = title || meta.title;
   const displayDescription = message || meta.description;
+
+  const handleCopyError = () => {
+    const errorText = typeof technicalDetails === 'string'
+      ? technicalDetails
+      : JSON.stringify(technicalDetails, null, 2);
+    navigator.clipboard.writeText(errorText);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
 
   return (
     <div style={styles.outerContainer}>
@@ -126,7 +137,23 @@ export function ErrorDisplay({
         {/* Technical Error Trace (Foldable) */}
         {technicalDetails && (
           <details style={styles.details}>
-            <summary style={styles.summary}>Technical Error Log</summary>
+            <summary style={styles.summaryContainer}>
+              <span style={styles.summary}>Technical Error Log</span>
+              <button
+                onClick={(e) => {
+                  e.preventDefault();
+                  handleCopyError();
+                }}
+                style={{
+                  ...styles.copyButton,
+                  background: copied ? '#059669' : '#e5e7eb',
+                  color: copied ? '#ffffff' : '#374151',
+                }}
+                title="Copy error details"
+              >
+                {copied ? '✓ Copied' : '📋 Copy'}
+              </button>
+            </summary>
             <pre style={styles.pre}>
               {typeof technicalDetails === 'string'
                 ? technicalDetails
@@ -218,10 +245,28 @@ const styles = {
     padding: '0.75rem 1rem',
     fontSize: '0.85rem',
   },
-  summary: {
+  summaryContainer: {
+    display: 'flex',
+    justifyContent: 'space-between',
+    alignItems: 'center',
     cursor: 'pointer',
+    gap: '0.75rem',
+  },
+  summary: {
     fontWeight: '600',
     color: '#475569',
+    flex: 1,
+    textAlign: 'left',
+  },
+  copyButton: {
+    padding: '0.4rem 0.8rem',
+    borderRadius: '4px',
+    border: 'none',
+    fontWeight: '600',
+    fontSize: '0.8rem',
+    cursor: 'pointer',
+    transition: 'all 0.2s',
+    whiteSpace: 'nowrap',
   },
   pre: {
     marginTop: '0.75rem',
