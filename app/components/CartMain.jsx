@@ -217,7 +217,7 @@ function CartEmpty({hidden = false, layout}) {
         </div>
         <div className="cart-empty-quick-pills">
           <Link
-            to="/products/nexa-dual-display-dock"
+            to="/collections/all"
             onClick={close}
             prefetch="viewport"
             className="cart-empty-quick-item"
@@ -227,7 +227,7 @@ function CartEmpty({hidden = false, layout}) {
             <div className="quick-item-price">£179.00</div>
           </Link>
           <Link
-            to="/products/nexa-quad-display-dock"
+            to="/collections/all"
             onClick={close}
             prefetch="viewport"
             className="cart-empty-quick-item"
@@ -237,14 +237,14 @@ function CartEmpty({hidden = false, layout}) {
             <div className="quick-item-price">£279.00</div>
           </Link>
           <Link
-            to="/compare"
+            to="/collections/all"
             onClick={close}
             prefetch="viewport"
             className="cart-empty-quick-item compare-quick-pill"
           >
-            <div className="quick-item-badge">Interactive Matrix</div>
-            <div className="quick-item-name">Compare All 5 Nexa Docks</div>
-            <div className="quick-item-arrow">View Specs →</div>
+            <div className="quick-item-badge">Browse Collections</div>
+            <div className="quick-item-name">Explore All Products</div>
+            <div className="quick-item-arrow">View All →</div>
           </Link>
         </div>
       </div>
