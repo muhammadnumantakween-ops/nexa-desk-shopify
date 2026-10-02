@@ -115,7 +115,7 @@ export const STORE_NAVIGATION = [
  * @param {HeaderProps}
  */
 export function Header({header, isLoggedIn, cart, publicStoreDomain}) {
-  const {shop, menu} = header;
+  const {shop = {}, menu = {}} = header || {};
   const [isScrolled, setIsScrolled] = useState(false);
 
   useEffect(() => {
@@ -146,7 +146,7 @@ export function Header({header, isLoggedIn, cart, publicStoreDomain}) {
         <HeaderMenu
           menu={menu}
           viewport="desktop"
-          primaryDomainUrl={header.shop.primaryDomain?.url}
+          primaryDomainUrl={shop?.primaryDomain?.url}
           publicStoreDomain={publicStoreDomain}
         />
 
