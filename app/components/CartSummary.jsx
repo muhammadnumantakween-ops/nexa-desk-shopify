@@ -31,7 +31,9 @@ export function CartSummary({cart, layout}) {
         discountCodes={cart?.discountCodes}
         discountsHeadingId={discountsHeadingId}
         discountCodeInputId={discountCodeInputId}
+        subtotal={parseFloat(cart?.cost?.subtotalAmount?.amount || '0')}
       />
+
       <CartGiftCard
         giftCardCodes={cart?.appliedGiftCards}
         giftCardHeadingId={giftCardHeadingId}
@@ -90,13 +92,26 @@ function CartCheckoutActions({checkoutUrl}) {
   };
 
   return (
-    <div>
-      <a href={checkoutUrl} onClick={handleCheckoutClick} target="_self">
-        <p>Continue to Checkout &rarr;</p>
+    <div className="cart-checkout-block">
+      <a
+        href={checkoutUrl}
+        onClick={handleCheckoutClick}
+        target="_self"
+        className="btn-luxury-checkout"
+      >
+        <span>Secure Checkout</span>
+        <span className="checkout-arrow">→</span>
       </a>
-      <br />
+      <div className="cart-trust-micro">
+        <span>🔒 256-Bit SSL</span>
+        <span>•</span>
+        <span>🇬🇧 UK Same-Day Dispatch</span>
+        <span>•</span>
+        <span>30-Day Trial</span>
+      </div>
     </div>
   );
+
 }
 
 /**
@@ -110,48 +125,80 @@ function CartDiscounts({
   discountCodes,
   discountsHeadingId,
   discountCodeInputId,
+  subtotal = 0,
 }) {
+  const [typedCode, setTypedCode] = useState('');
   const codes =
     discountCodes
       ?.filter((discount) => discount.applicable)
       ?.map(({code}) => code) || [];
 
+  const hasDesk10 = codes.some((c) => c.toUpperCase() === 'DESK10');
+
   return (
-    <section aria-label="Discounts">
+    <section aria-label="Discounts" className="cart-discounts-section">
       {/* Have existing discount, display it with a remove option */}
-      <dl hidden={!codes.length}>
+      <dl hidden={!codes.length} className="applied-discounts-dl">
         <div>
-          <dt id={discountsHeadingId}>Discounts</dt>
+          <dt id={discountsHeadingId} className="applied-discount-label">
+            <span>🎉 Applied Promo</span>
+          </dt>
           <UpdateDiscountForm>
             <div
-              className="cart-discount"
+              className="cart-discount-pill"
               role="group"
               aria-labelledby={discountsHeadingId}
             >
-              <code>{codes?.join(', ')}</code>
-              &nbsp;
-              <button type="submit" aria-label="Remove discount">
-                Remove
+              <span className="discount-icon">🏷️</span>
+              <strong className="discount-code-tag">{codes?.join(', ')}</strong>
+              <span className="discount-benefit-note">10% Bundle Savings</span>
+              <button
+                type="submit"
+                aria-label="Remove discount"
+                className="btn-remove-discount"
+              >
+                ✕
               </button>
             </div>
           </UpdateDiscountForm>
         </div>
       </dl>
 
+      {/* Real-Time DESK10 Validation Feedback Box (UI-CART-03) */}
+      {!hasDesk10 && (
+        <div className="desk10-promo-hint">
+          <div className="hint-header">
+            <span className="hint-sparkle">⚡</span>
+            <span className="hint-title">Use Code <strong>DESK10</strong> for 10% off</span>
+          </div>
+          <p className="hint-desc">
+            Save 10% on complete workstation setups & docks today.
+          </p>
+        </div>
+      )}
+
       {/* Show an input to apply a discount */}
       <UpdateDiscountForm discountCodes={codes}>
-        <div>
+        <div className="discount-input-row">
           <label htmlFor={discountCodeInputId} className="sr-only">
             Discount code
           </label>
-          <input
-            id={discountCodeInputId}
-            type="text"
-            name="discountCode"
-            placeholder="Discount code"
-          />
-          &nbsp;
-          <button type="submit" aria-label="Apply discount code">
+          <div className="input-wrap">
+            <input
+              id={discountCodeInputId}
+              type="text"
+              name="discountCode"
+              placeholder="Enter promo code (e.g. DESK10)"
+              value={typedCode}
+              onChange={(e) => setTypedCode(e.target.value.toUpperCase())}
+              className="discount-field"
+            />
+          </div>
+          <button
+            type="submit"
+            aria-label="Apply discount code"
+            className="btn-apply-discount"
+          >
             Apply
           </button>
         </div>
@@ -159,6 +206,7 @@ function CartDiscounts({
     </section>
   );
 }
+
 
 /**
  * @param {{

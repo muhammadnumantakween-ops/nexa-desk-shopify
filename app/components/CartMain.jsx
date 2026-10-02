@@ -3,6 +3,8 @@ import {Link} from 'react-router';
 import {useAside} from '~/components/Aside';
 import {CartLineItem} from '~/components/CartLineItem';
 import {CartSummary} from './CartSummary';
+import {FreeShippingBar} from './FreeShippingBar';
+
 /**
  * Returns a map of all line items and their children.
  * @param {CartLine[]} lines
@@ -50,7 +52,9 @@ export function CartMain({layout, cart: originalCart}) {
       aria-label={layout === 'page' ? 'Cart page' : 'Cart drawer'}
     >
       <CartEmpty hidden={linesCount} layout={layout} />
+      {cartHasItems && <FreeShippingBar cart={cart} />}
       {cart?.warnings && cart.warnings.length > 0 && (
+
         <div style={{background: '#fffbeb', border: '1px solid #fcd34d', color: '#92400e', padding: '1rem', borderRadius: '6px', margin: '1rem 0'}}>
           <h4 style={{margin: '0 0 0.5rem 0', fontWeight: '700'}}>⚠️ Stock Availability Notice:</h4>
           <ul style={{margin: 0, paddingLeft: '1.25rem', fontSize: '0.9rem'}}>

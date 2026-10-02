@@ -62,16 +62,30 @@ export function CartLineItem({layout, line, childrenMap}) {
             ))}
           </ul>
           {line?.attributes && line.attributes.length > 0 && (
-            <div style={{marginTop: '0.4rem', fontSize: '0.75rem', color: '#4b5563'}}>
+            <div className="cart-item-badges-strip">
               {line.attributes
                 .filter((attr) => attr.value)
-                .map((attr) => (
-                  <div key={attr.key} style={{display: 'inline-block', marginRight: '0.5rem', background: '#f3f4f6', padding: '0.1rem 0.4rem', borderRadius: '3px'}}>
-                    <span style={{fontWeight: '600'}}>{attr.key.replace(/^_/, '')}:</span> {attr.value}
-                  </div>
-                ))}
+                .map((attr) => {
+                  const rawKey = attr.key.replace(/^_/, '');
+                  const isSetup = rawKey.toLowerCase().includes('setup') || rawKey.toLowerCase().includes('bundle');
+                  const isDevice = rawKey.toLowerCase().includes('device') || rawKey.toLowerCase().includes('profile');
+                  
+                  return (
+                    <div
+                      key={attr.key}
+                      className={`cart-badge-chip ${isSetup ? 'chip-setup' : isDevice ? 'chip-device' : 'chip-meta'}`}
+                    >
+                      <span className="chip-icon">
+                        {isSetup ? '🖥️' : isDevice ? '⚡' : '🏷️'}
+                      </span>
+                      <span className="chip-key">{rawKey}:</span>
+                      <strong className="chip-val">{attr.value}</strong>
+                    </div>
+                  );
+                })}
             </div>
           )}
+
           <CartLineQuantity line={line} />
         </div>
       </div>
