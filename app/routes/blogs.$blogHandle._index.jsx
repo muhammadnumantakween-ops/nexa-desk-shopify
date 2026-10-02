@@ -1,6 +1,8 @@
+import {useState} from 'react';
 import {Link, useLoaderData} from 'react-router';
 import {Image, getPaginationVariables} from '@shopify/hydrogen';
 import {redirectIfHandleIsLocalized} from '~/lib/redirect';
+
 
 /**
  * Editorial workspace guides & tips fixture for NexaDesk UK
@@ -19,7 +21,7 @@ const FALLBACK_BLOGS = {
           publishedAt: '2026-09-28T09:00:00Z',
           excerpt: 'Why macOS handles multi-stream transport (MST) differently from Windows, and how our D2 Link 100 dock solves it with clean hardware dual-output feeds.',
           readTime: '4 min read',
-          tag: 'Mac Hardware',
+          tag: 'Mac Compatibility',
           contentHtml: `
             <p>Connecting two external displays to Apple Silicon (M1/M2/M3/M4) or Intel MacBooks is one of the most common challenges remote workers face.</p>
             <h3>Why macOS Handles Dual Displays Differently</h3>
@@ -44,7 +46,7 @@ const FALLBACK_BLOGS = {
           publishedAt: '2026-09-25T11:30:00Z',
           excerpt: 'Learn the 90-degree arm angle rule, monitor eye-level alignment, and why single-cable docking improves daily focus.',
           readTime: '5 min read',
-          tag: 'Ergonomics',
+          tag: 'Ergonomics & Posture',
           contentHtml: `
             <p>Spending 8+ hours a day at your desk shouldn't lead to chronic neck stiffness or a tangle of charging cords.</p>
             <h3>1. The Eye-Level Monitor Rule</h3>
@@ -69,7 +71,7 @@ const FALLBACK_BLOGS = {
           publishedAt: '2026-09-20T14:15:00Z',
           excerpt: 'A plain-English guide decoding charging wattages, DisplayPort Alt Mode bandwidth, and matching the right dock to your laptop.',
           readTime: '3 min read',
-          tag: 'Specs & Power',
+          tag: 'Docking Stations',
           contentHtml: `
             <p>Not all USB-C ports on laptops are created equal. Some carry high-speed data only, while others deliver DisplayPort video and 100W bi-directional charging.</p>
             <p>We test every NexaDesk hardware component in our UK depot to guarantee 100% plug-and-play compliance with Windows and macOS laptops.</p>
@@ -162,7 +164,23 @@ function loadDeferredData({context}) {
 export default function Blog() {
   /** @type {LoaderReturnData} */
   const {blog} = useLoaderData();
-  const articles = blog?.articles || {nodes: []};
+  const allArticles = blog?.articles?.nodes || [];
+  const [activeCategory, setActiveCategory] = useState('All Guides');
+
+  const CATEGORIES = [
+    'All Guides',
+    'Mac Compatibility',
+    'Ergonomics & Posture',
+    'Docking Stations',
+  ];
+
+  const filteredArticles = allArticles.filter((article) => {
+    if (activeCategory === 'All Guides') return true;
+    return (
+      article.tag === activeCategory ||
+      article.title?.toLowerCase().includes(activeCategory.toLowerCase().slice(0, 4))
+    );
+  });
 
   return (
     <div className="impeccable-static-page journal-page-wrapper">
@@ -190,18 +208,34 @@ export default function Blog() {
         </header>
 
         {/* Blog Category Filters */}
-        <div className="journal-filter-strip">
-          <span className="journal-pill is-active">All Guides</span>
-          <span className="journal-pill">Mac Compatibility</span>
-          <span className="journal-pill">Ergonomics & Posture</span>
-          <span className="journal-pill">Docking Stations</span>
+        <div className="journal-filter-strip" role="tablist" aria-label="Guide Categories">
+          {CATEGORIES.map((cat) => {
+            const isActive = activeCategory === cat;
+            return (
+              <button
+                type="button"
+                key={cat}
+                role="tab"
+                aria-selected={isActive}
+                onClick={() => setActiveCategory(cat)}
+                className={`journal-pill ${isActive ? 'is-active' : ''}`}
+              >
+                {cat}
+                {isActive && (
+                  <span className="pill-count-dot">
+                    {filteredArticles.length}
+                  </span>
+                )}
+              </button>
+            );
+          })}
         </div>
 
         {/* Articles Grid */}
         <div className="journal-articles-container">
-          {articles.nodes && articles.nodes.length > 0 ? (
+          {filteredArticles && filteredArticles.length > 0 ? (
             <div className="luxury-blog-grid">
-              {articles.nodes.map((article, index) => (
+              {filteredArticles.map((article, index) => (
                 <ArticleCard
                   article={article}
                   key={article.id || index}
@@ -211,11 +245,15 @@ export default function Blog() {
             </div>
           ) : (
             <div className="empty-state-card">
-              <h3>No articles published yet</h3>
-              <p>Check back soon for new guides and advice from our UK engineering team.</p>
-              <Link to="/" className="btn-luxury-primary">
-                Return to Store
-              </Link>
+              <h3>No articles found in &ldquo;{activeCategory}&rdquo;</h3>
+              <p>Try selecting &ldquo;All Guides&rdquo; to browse our complete workspace engineering library.</p>
+              <button
+                type="button"
+                onClick={() => setActiveCategory('All Guides')}
+                className="btn-luxury-primary"
+              >
+                Show All Guides
+              </button>
             </div>
           )}
         </div>
