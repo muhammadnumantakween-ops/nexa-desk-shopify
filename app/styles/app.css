@@ -1642,7 +1642,9 @@ button.reset:hover:not(:has(> *)) {
 }
 
 /* Cart Page Wrapper */
-.cart {
+.cart,
+.cart-page-wrapper,
+.cart-layout-container {
   width: 100%;
   background: linear-gradient(135deg, #030712 0%, #0f172a 100%);
   min-height: 100vh;

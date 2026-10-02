@@ -6,7 +6,7 @@ import {CartMain} from '~/components/CartMain';
  * @type {Route.MetaFunction}
  */
 export const meta = () => {
-  return [{title: `Hydrogen | Cart`}];
+  return [{title: `NexaDesk | Shopping Cart`}];
 };
 
 /**
@@ -44,10 +44,8 @@ export async function action({request, context}) {
     case CartForm.ACTIONS.DiscountCodesUpdate: {
       const formDiscountCode = inputs.discountCode;
 
-      // User inputted discount code
       const discountCodes = formDiscountCode ? [formDiscountCode] : [];
 
-      // Combine discount codes already applied on cart
       discountCodes.push(...inputs.discountCodes);
 
       result = await cart.updateDiscountCodes(discountCodes);
@@ -112,8 +110,7 @@ export default function Cart() {
   const cart = useLoaderData();
 
   return (
-    <div className="cart">
-      <h1>Cart</h1>
+    <div className="cart-page-wrapper">
       <CartMain layout="page" cart={cart} />
     </div>
   );
